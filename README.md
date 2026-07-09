@@ -19,7 +19,7 @@ composer install
 cp .env.example .env
 php artisan key:generate
 php artisan migrate --seed
-php artisan serve
+php artisan serve      # ou : composer run dev
 ```
 
 > ⚠️ Au démarrage, l'application affiche une erreur (`Class "App\Models\Article" not
