@@ -1,0 +1,5 @@
+# On committe volontairement database.sqlite (vide) pour éviter toute
+# friction le jour J. Les fichiers temporaires SQLite restent ignorés.
+*.sqlite-journal
+*.sqlite-wal
+*.sqlite-shm
