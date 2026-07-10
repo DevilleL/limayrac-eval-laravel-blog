@@ -9,59 +9,72 @@
 @section('title', 'Articles')
 
 @section('content')
-    <div class="flex items-center justify-between mb-6">
-        <h1 class="text-2xl font-bold">Articles</h1>
-        <a href="{{ route('articles.create') }}"
-           class="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm hover:bg-indigo-700">
-            + Nouvel article
-        </a>
+    <div class="mb-8 rounded-3xl border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/20 backdrop-blur">
+        <div class="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+                <p class="text-sm uppercase tracking-[0.3em] text-cyan-200/70">Gestion du contenu</p>
+                <h1 class="mt-2 text-3xl font-semibold text-white sm:text-4xl">Articles</h1>
+                <p class="mt-3 max-w-2xl text-sm leading-6 text-slate-300">
+                    Suis l’état des publications, les catégories et les tags associés depuis un tableau de bord plus lisible.
+                </p>
+            </div>
+            <a href="{{ route('articles.create') }}"
+               class="inline-flex items-center justify-center rounded-full bg-cyan-400 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-300">
+                + Nouvel article
+            </a>
+        </div>
     </div>
 
-    @forelse ($listeArticles as $article)
-        <div class="bg-white rounded-lg shadow p-5 mb-4">
-            <div class="flex items-start justify-between">
-                <div>
-                    <a href="{{ route('articles.show', $article) }}"
-                       class="text-lg font-semibold text-indigo-600 hover:underline">
-                        {{ $article->title }}
-                    </a>
-                    <p class="text-sm text-gray-500 mt-1">
-                        Catégorie :
-                        <span class="font-medium">{{ $article->category->name }}</span>
-                        ·
-                        <span class="uppercase text-xs px-2 py-0.5 rounded
-                            {{ $article->status === 'published' ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-600' }}">
-                            {{ $article->status }}
-                        </span>
-                    </p>
-                    <div class="mt-2 space-x-1">
-                        @foreach ($article->tags as $tag)
-                            <span class="inline-block text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded">
-                                #{{ $tag->name }}
+    <div class="space-y-4">
+        @forelse ($listeArticles as $article)
+            <article class="group rounded-3xl border border-white/10 bg-white/5 p-5 shadow-xl shadow-black/10 transition hover:-translate-y-0.5 hover:border-cyan-300/30 hover:bg-white/10">
+                <div class="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+                    <div class="space-y-4">
+                        <div class="flex flex-wrap items-center gap-2 text-xs uppercase tracking-[0.25em] text-slate-400">
+                            <span class="rounded-full bg-white/10 px-3 py-1 text-slate-200">{{ $article->category->name }}</span>
+                            <span class="rounded-full px-3 py-1 {{ $article->status === 'published' ? 'bg-emerald-400/15 text-emerald-300' : 'bg-slate-400/15 text-slate-300' }}">
+                                {{ $article->status }}
                             </span>
-                        @endforeach
+                        </div>
+
+                        <a href="{{ route('articles.show', $article) }}"
+                           class="block text-2xl font-semibold tracking-tight text-white transition group-hover:text-cyan-200">
+                            {{ $article->title }}
+                        </a>
+
+                        <div class="flex flex-wrap gap-2">
+                            @forelse ($article->tags as $tag)
+                                <span class="inline-flex items-center rounded-full border border-white/10 bg-slate-900/70 px-3 py-1 text-xs text-slate-300">
+                                    #{{ $tag->name }}
+                                </span>
+                            @empty
+                                <span class="text-sm text-slate-400">Aucun tag associé.</span>
+                            @endforelse
+                        </div>
+                    </div>
+
+                    <div class="flex flex-wrap items-center gap-3 lg:justify-end">
+                        <a href="{{ route('articles.edit', $article) }}"
+                           class="rounded-full border border-white/10 px-4 py-2 text-sm text-slate-200 transition hover:border-cyan-300/40 hover:bg-white/10 hover:text-white">Éditer</a>
+                        <form action="{{ route('articles.destroy', $article) }}" method="POST"
+                              onsubmit="return confirm('Supprimer cet article ?');">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="rounded-full border border-rose-400/20 bg-rose-500/10 px-4 py-2 text-sm text-rose-200 transition hover:bg-rose-500/20 hover:text-rose-100">
+                                Supprimer
+                            </button>
+                        </form>
                     </div>
                 </div>
-                <div class="flex items-center space-x-2 shrink-0">
-                    <a href="{{ route('articles.edit', $article) }}"
-                       class="text-sm text-gray-600 hover:text-indigo-600">Éditer</a>
-                    <form action="{{ route('articles.destroy', $article) }}" method="POST"
-                          onsubmit="return confirm('Supprimer cet article ?');">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="text-sm text-red-600 hover:text-red-800">
-                            Supprimer
-                        </button>
-                    </form>
-                </div>
+            </article>
+        @empty
+            <div class="rounded-3xl border border-dashed border-white/15 bg-white/5 p-10 text-center text-slate-300">
+                <p class="text-lg font-medium text-white">Aucun article pour le moment.</p>
+                <p class="mt-2 text-sm text-slate-400">Crée le premier article pour peupler la page.</p>
+                <a href="{{ route('articles.create') }}" class="mt-6 inline-flex rounded-full bg-cyan-400 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-300">
+                    Créer un article
+                </a>
             </div>
-        </div>
-    @empty
-        <div class="bg-white rounded-lg shadow p-8 text-center text-gray-500">
-            Aucun article pour le moment.
-            <a href="{{ route('articles.create') }}" class="text-indigo-600 hover:underline">
-                Crée le premier
-            </a>.
-        </div>
-    @endforelse
+        @endforelse
+    </div>
 @endsection

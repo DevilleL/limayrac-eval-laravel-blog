@@ -2,51 +2,76 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreArticleRequest;
+use App\Http\Requests\UpdateArticleRequest;
 use App\Models\Article;
-use Illuminate\Http\Request;
+use App\Models\Category;
+use App\Models\Tag;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
 
 class ArticleController extends Controller
 {
-    // TODO : liste des articles. La vue attend $listeArticles (relations category + tags chargées, gare au N+1).
-    public function index()
+    public function index(): View
     {
-        Article::query(); // amorce à remplacer : déclenche l'erreur qui te lance
-        return view('articles.index');
+        $listeArticles = Article::with(['category', 'tags'])->latest()->get();
+
+        return view('articles.index', compact('listeArticles'));
     }
 
-    // TODO : formulaire de création. La vue attend $categoriesDisponibles et $tagsDisponibles.
-    public function create()
+    public function create(): View
     {
-        //
+        $categoriesDisponibles = Category::orderBy('name')->get();
+        $tagsDisponibles = Tag::orderBy('name')->get();
+
+        return view('articles.create', compact('categoriesDisponibles', 'tagsDisponibles'));
     }
 
-    // TODO : valider, créer l'article, attacher les tags, rediriger avec flash success.
-    public function store(Request $request)
+    public function store(StoreArticleRequest $request): RedirectResponse
     {
-        //
+        $article = Article::create($request->validated());
+        $article->tags()->sync($request->input('tags', []));
+
+        return redirect()
+            ->route('articles.index')
+            ->with('success', 'Article créé avec succès.');
     }
 
-    // TODO : afficher un article. La vue attend $article.
-    public function show(string $id)
+    public function show(string $id): View
     {
-        //
+        $article = Article::with(['category', 'tags'])->findOrFail($id);
+
+        return view('articles.show', compact('article'));
     }
 
-    // TODO : formulaire d'édition. La vue attend $article, $categoriesDisponibles, $tagsDisponibles.
-    public function edit(string $id)
+    public function edit(string $id): View
     {
-        //
+        $article = Article::with('tags')->findOrFail($id);
+        $article->load('tags');
+        $categoriesDisponibles = Category::orderBy('name')->get();
+        $tagsDisponibles = Tag::orderBy('name')->get();
+
+        return view('articles.edit', compact('article', 'categoriesDisponibles', 'tagsDisponibles'));
     }
 
-    // TODO : valider, mettre à jour l'article, resynchroniser les tags (sync), rediriger avec flash success.
-    public function update(Request $request, string $id)
+    public function update(UpdateArticleRequest $request, string $id): RedirectResponse
     {
-        //
+        $article = Article::findOrFail($id);
+        $article->update($request->validated());
+        $article->tags()->sync($request->input('tags', []));
+
+        return redirect()
+            ->route('articles.index')
+            ->with('success', 'Article mis à jour avec succès.');
     }
 
-    // TODO : supprimer l'article, rediriger avec flash success.
-    public function destroy(string $id)
+    public function destroy(string $id): RedirectResponse
     {
-        //
+        $article = Article::findOrFail($id);
+        $article->delete();
+
+        return redirect()
+            ->route('articles.index')
+            ->with('success', 'Article supprimé avec succès.');
     }
 }
